@@ -1,0 +1,23 @@
+#!/bin/bash
+test -z "${BUCKET}" && exit 0
+
+export MCRCON_HOST=${1:-main}
+export MCRCON_PASS=rconpass
+
+if [ "$2" = wait ]; then
+  mcrcon 'say 1分後にワールドのバックアップを開始します。'
+  sleep 1m
+  mcrcon 'say ワールドのバックアップを実行しています。' || exit 1
+fi
+
+test "$2" != offline && (mcrcon 'say ワールドのバックアップを実行しています。' || exit 1)
+
+rm -f /tmp/${MCRCON_HOST}.tar.gz
+test "$2" != offline && mcrcon save-off
+test "$2" != offline && mcrcon 'save-all flush'
+tar czf /tmp/${MCRCON_HOST}.tar.gz -C /mnt ${MCRCON_HOST} --exclude active
+test "$2" != offline && mcrcon save-on
+aws s3 cp /tmp/${MCRCON_HOST}.tar.gz s3://${BUCKET}/archives/
+rm -f /tmp/${MCRCON_HOST}.tar.gz
+
+test "$2" != offline && mcrcon 'say バックアップが終了しました。'

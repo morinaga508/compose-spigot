@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ "$1" = nowait ]; then
+  mcrcon -H main -p rconpass 'say 1分後にサーバを停止します。'
+  mcrcon -H hub  -p rconpass 'say 1分後にサーバを停止します。'
+fi
+mcrcon -H main -p rconpass stop
+mcrcon -H hub  -p rconpass stop
+
+while [ -f /mnt/main/active ]; do
+  sleep 1
+done
+while [ -f /mnt/hub/active ]; do
+  sleep 1
+done
+
+
+/usr/local/bin/mcbackup main offline
+/usr/local/bin/mcbackup hub offline
+/usr/local/bin/bungeebackup

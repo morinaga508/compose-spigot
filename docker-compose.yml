@@ -1,0 +1,62 @@
+version: "3.7"
+services:
+  bungee:
+    build:
+      context: ./bungee
+    image: bungee
+    hostname: bungee
+    environment:
+      - JAVA_OPTS=${BUNGEE_JAVA_OPTS}
+      - OP=${OP}
+      - MOTD=${MOTD}
+      - MAXPLAYERS=${MAXPLAYERS:-20}
+      - DISABLE_COMMAND=${DISABLE_COMMAND:-aac, axr}
+    ports:
+      - 25565:25565
+    volumes:
+      - ${DATA_DIR:-.}/bungee:/usr/local/bungee/data
+    depends_on:
+      - command
+
+  command:
+    build:
+      context: ./command
+    image: command
+    hostname: command
+    environment:
+      - BUCKET=${BUCKET}
+    volumes:
+      - ${DATA_DIR:-.}/bungee:/mnt/bungee
+      - ${DATA_DIR:-.}/main:/mnt/main
+      - ${DATA_DIR:-.}/hub:/mnt/hub
+
+  main:
+    build:
+      context: ./spigot
+      args: 
+        mcver: ${MCVER:-1.14.4}
+    image: spigot
+    hostname: main
+    environment:
+      - JAVA_OPTS=${MAIN_JAVA_OPTS}
+      - EULA=${EULA:-false}
+      - COMMANDBLOCK=${COMMANDBLOCK:-true}
+      - WHITE_LIST=${WHITE_LIST:-false}
+    volumes:
+      - ${DATA_DIR:-.}/main:/usr/local/spigot/data
+    depends_on:
+      - command
+
+  hub:
+    image: spigot
+    hostname: hub
+    environment:
+      - JAVA_OPTS=${HUB_JAVA_OPTS}
+      - EULA=${EULA:-false}
+      - COMMANDBLOCK=${COMMANDBLOCK:-true}
+      - WHITE_LIST=${WHITE_LIST:-false}
+    volumes:
+      - ${DATA_DIR:-.}/hub:/usr/local/spigot/data
+    depends_on:
+      - command
+                    

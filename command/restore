@@ -1,0 +1,19 @@
+#!/bin/bash
+for CONTAINER in bungee hub main; do
+  if [ -z "${BUCKET}" ]; then
+    touch /mnt/${CONTAINER}/active
+    continue
+  fi
+  if [ ! -f "/mnt/${CONTAINER}/active" ]; then
+    rm -rf /mnt/${CONTAINER}/active
+    cd /mnt
+    aws s3 ls s3://${BUCKET}/archives/${CONTAINER}.tar.gz
+    if [ $? -eq 0 ]; then
+      aws s3 cp s3://${BUCKET}/archives/${CONTAINER}.tar.gz - | tar xzv && touch /mnt/${CONTAINER}/active
+    else
+      touch /mnt/${CONTAINER}/active
+    fi
+  fi
+done
+
+

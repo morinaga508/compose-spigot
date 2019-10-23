@@ -1,0 +1,10 @@
+#!/bin/bash
+test -z "${BUCKET}" && exit 0
+
+BUNGEE_HOST=bungee
+
+rm -f /tmp/${BUNGEE_HOST}.tar.gz
+tar czf /tmp/${BUNGEE_HOST}.tar.gz -C /mnt ${BUNGEE_HOST} --exclude active
+aws s3 cp /tmp/${BUNGEE_HOST}.tar.gz s3://${BUCKET}/archives/
+rm -f /tmp/${BUNGEE_HOST}.tar.gz
+
